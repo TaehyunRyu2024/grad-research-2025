@@ -1,0 +1,17 @@
+{
+    "experiment": "SamuelExperiment_RefineWave",
+    "preset": "LMD2e3",
+    "N_EPOCHS": 50000,
+    "N_COLLOCATION": 100,
+    "N_IC": 1000,
+    "LR": 0.0001,
+    "LAMBDA": 2000.0,
+    "L": 1.0,
+    "T": 2.0,
+    "c": 1.2,
+    "nl": 20,
+    "nt": 26,
+    "frequency": 2.0,
+    "snr_db": 20.0,
+    "beam_res": 50
+}

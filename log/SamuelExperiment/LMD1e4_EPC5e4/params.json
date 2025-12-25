@@ -1,0 +1,18 @@
+{
+    "experiment": "SamuelExperiment",
+    "preset": "LMD1e4_EPC5e4",
+    "N_EPOCHS": 50000,
+    "N_COLLOCATION": 100,
+    "N_IC": 1000,
+    "LR": 0.0001,
+    "LAMBDA": 10000.0,
+    "L": 1.0,
+    "T": 2.0,
+    "c": 1.0,
+    "nl": 20,
+    "nt": 26,
+    "frequency": 3.0,
+    "snr_db": 20.0,
+    "pulse_width": 0.3,
+    "beam_res": 50
+}

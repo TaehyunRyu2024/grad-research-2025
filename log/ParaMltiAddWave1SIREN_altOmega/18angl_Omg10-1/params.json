@@ -1,0 +1,18 @@
+{
+    "N_EPOCHS": 50000,
+    "N_COLLOCATION": 100,
+    "N_IC": 1000,
+    "LR": 0.001,
+    "LAMBDA": 10000.0,
+    "L": 1.0,
+    "T": 2.0,
+    "c": 1.2,
+    "nl": 20,
+    "nt": 26,
+    "frequency": 2.0,
+    "snr_db": 20.0,
+    "beam_res": 50,
+    "n_angles": 18,
+    "experiment": "ParaMltiAddWave1SIREN_altOmega",
+    "preset": "18angl_Omg10-1"
+}

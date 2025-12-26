@@ -1,0 +1,266 @@
+\documentclass{oikenGodo}
+
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{amsmath,subfigure}
+
+\title{偏光高速度干渉計を用いた球面座標系における 3 次元音場復元}	%改行したい場合は\\を挟む
+\labname{及川靖広研究室} 
+\grade{m}{2}	% {b}{4} か {m}{2}
+\author{野澤 遙}	% 苗字と名前の間は半角の空白
+
+\begin{document}
+\maketitle
+
+
+%---------------------------------------------------------------------------------------------------
+\section{まえがき}
+%---------------------------------------------------------------------------------------------------
+近年，光学技術やセンシング技術の発展が著しく，それらを用いることでこれまでできなかったことが可能となったり，困難であったことが容易になってきた。
+我々は光学的音響計測に関する研究を行っており，偏光高速度干渉計を用いた並列位相シフト干渉法 (PPSI)を用いた音場可視化計測に取り組んでいる~\cite{ishikawaPPSI,yatabe2019}。マイクロホンを設置しにくい場所での音響計測や音源近傍の音の計測に有効であることを確認してきた~\cite{oikawa2021}。
+このように，音響計測や音響信号の収録方法も多様化しており，さらに信号処理の適用により新しい情報の取得とその利用が可能となる。
+
+口元での音の収録は多くの場面で求められる。通常マイクロホンをなるべく近くに設置して収録を行う。しかし，口元付近の音場の収録はできない。
+%音場の記録も可能とする新たな収録方法を考えても良いかもしれない。
+そこで本研究では，PPSIの適用例の一つとして口笛演奏の可視化計測を行うとともに，口笛演奏音の収録を行った。
+
+
+%---------------------------------------------------------------------------------------------------
+\section{基本的な注意点}
+%---------------------------------------------------------------------------------------------------
+偏光高速度干渉計を用いたPPSIの開発により時間的にも空間的にも高分解能な音場の瞬時定量計測と可視化が可能となった。
+計測データは高速度カメラに記録されるので，ある領域での音の伝搬を瞬時に可視化計測することができる。
+計測対象に特に制限はないが，例えば音源近傍や流れ内部などのマイクロホンを設置しにくい場所への適用が可能である。
+
+\begin{figure}[b]
+	\centering
+	\includegraphics[width=0.95\columnwidth]{figures/ppsi_setup.eps}
+	\caption{並列位相シフト干渉法 (PPSI) のための偏光高速度干渉計}
+	\label{fig:PPSI}
+\end{figure}
+
+PPSIのための偏光高速度干渉計を\figref{fig:PPSI}に示す。
+位相シフト干渉法と呼ばれる光学位相分布計測手法と，偏光計測技術および偏光高速度カメラを組み合わせたものであり，
+PPSIを実現する光学システムとなっている。
+高速度カメラを用いるシステムで，対象とする領域の音場を瞬時に定量的に２次元イメージング可能である。
+MirrorとReference planeの間が可視化計測領域となる。
+
+
+また，計測値は光路上の音圧を積分した量に比例し，光路上での積分は光路と垂直方向に指向性を作る効果がある\cite{Antoni_EURONOISE2012}。そのため，偏光高速度干渉計を用いた収録は，光路と垂直方向から到達する音を強調して集音することが可能である。
+
+%---------------------------------------------------------------------------------------------------
+\section{クラスファイル oikenGodo.cls}
+%---------------------------------------------------------------------------------------------------
+このファイルは，電子情報通信学会論文誌用クラスファイル
+（\verb=ieicej.cls=）の，
+技術報告用のものを本発表会用に改変したものです．
+その為，基本的な注意事項等は\verb=ieicej.cls=と同じになります．
+
+ただし，及川先生の意向を踏まえて日本音響学会誌の論文スタイルに改変してあります（2014/12/09）．
+図の引用は\verb=ref=の代わりに\verb=figref=を，表の引用は\verb=tabref=を使用してください．
+
+
+%---------------------------------------------------------------------------------------------------
+\section{TeXの書き方}
+%---------------------------------------------------------------------------------------------------
+
+論文の引用はこんな感じ\cite{oikawa2005,ikeda2006,yatabe2014,ikedaGosa,Tikhonov}．書籍の場合は書き方が変わる\cite{fourierAcoust,hankel,InverseProblem,simulation,appliedInverseProblem}．
+
+\begin{figure}[t]
+	\centering
+%		\includegraphics[width=\columnwidth]{figures/figuresample.eps}
+	\caption{図はこのように入れるという例．この図を引用するには，指定したラベルをfigrefで指定する．キャプションは一言だけ書く場合と，本文を読まなくても図の内容が把握できるようにしっかり書く場合がある．}
+	\label{fig:図のラベル（適当に自分で決める）}
+\end{figure}
+
+図は\figref{fig:図のラベル（適当に自分で決める）}のようにいれる．\verb=\begin{figure}=のオプションには\verb=[tbph]=などが指定できるが，基本は\verb=[t]=か\verb=[!t]=を用いる．\verb=figref=を用いると，一回目の引用はゴシックになるが，二回目以降の引用は\figref{fig:図のラベル（適当に自分で決める）}のように明朝になる（日本音響学会誌仕様）．表も同様に\tabref{table:表のラベル（適当に自分で決める）}のように引用するし，二回目以降は\tabref{table:表のラベル（適当に自分で決める）}となる．
+
+
+改行は段落切り替えになる．
+数式は
+\begin{equation}
+	\int\!\!\!\int_S \left(\frac{\partial V}{\partial x} - \frac{\partial U}{\partial y}\right) dxdy
+	= \oint_C \left(U \frac{dx}{ds} + V \frac{dy}{ds}\right)ds
+\end{equation}
+とか
+\begin{equation}
+	\min_{\bf x}\,\,\,\,\left\|A{\bf x}-{\bf b}\right\|_2^2+\lambda\left\|{\bf x}\right\|_1
+\end{equation}
+みたいにやる．
+
+複数行の場合は
+\begin{align}
+	{\bf x}_{n+1} \!&= \underset{{\bf x}}{\text{argmin}}\!\left[\,f({\bf x})+\frac{\rho}{2}\bigl\|L{\bf x}\,+\,T{\bf z}_n-{\bf c}+{\bf y}_n\bigr\|_2^2\,\right]	\nonumber\\[-2pt]
+	{\bf z}_{n+1} \!&= \underset{{\bf z}}{\text{argmin}}\!\left[\,\,g({\bf z})+\frac{\rho}{2}\bigl\|L{\bf x}_{n+1}\!+T{\bf z}-{\bf c}+{\bf y}_n\bigr\|_2^2\,\right]	\nonumber\\
+	{\bf y}_{n+1} \!&= {\bf y}_n + L{\bf x}_{n+1} + T{\bf z}_{n+1} -{\bf c}
+	\label{eq:algADMM}
+\end{align}
+みたいな感じに書く．式の引用は式\eqref{eq:algADMM}みたいな感じ．
+
+他にも例を挙げてみると
+\begin{equation}
+	\begin{array}{ll}
+		\text{minimize}			&	f({\bf x}) + g({\bf z})	\\[2pt]
+		\text{subject to } \!\!\!\!	&	L{\bf x} + T{\bf z} = {\bf c}
+	\end{array}
+	\label{eq:ADMMprob}
+\end{equation}
+とか
+\begin{equation}
+	\text{prox}_{f}({\bf x}) = \underset{{\bf y}}{\text{argmin}}\Bigl[\,f({\bf y})+\frac{1}{2}\bigl\|{\bf x}-{\bf y}\bigr\|_2^2\,\Bigr]
+\end{equation}
+みたいな感じ．式\eqref{eq:ADMMprob}みたいに引用する．
+
+
+
+%---------------------------------------------------------------------------------------------------
+\section{むすび}
+%---------------------------------------------------------------------------------------------------
+
+基本的に「latex ○○」みたいに検索すれば色々みつかるので，書きたいことがあればWeb検索しましょう．わからないことは周りや先輩に聞きましょう．
+
+
+\begin{table}[!t]
+	\caption{その他のマクロ}
+	\label{table:表のラベル（適当に自分で決める）}
+	\centering
+	\begin{tabular}{c|c}
+		\Hline
+		\verb/\RN{2}/ & \RN{2} \\
+		\verb/\RN{117}/ & \RN{117} \\
+		\verb/\FRAC{$\pi$}{2}/ & \FRAC{$\pi$}{2}\\
+		\verb/\FRAC{1}{4}/ & \FRAC{1}{4} \\
+		\verb/\MARU{1}/ & \MARU{1}\\
+		\verb/\MARU{a}/ & \MARU{a}\\
+		\verb/\kintou{4zw}{記号例}/ & \kintou{4zw}{記号例}\\
+		\verb/\ruby{砒}{ひ}\ruby{素}{そ}/ & \ruby{砒}{ひ}\ruby{素}{そ}\\
+		\Hline
+	\end{tabular}
+\end{table}
+
+
+%---------------------------------------------------------------------------------------------------
+\ack
+ありがとー！
+%---------------------------------------------------------------------------------------------------
+
+%---------------------------------------------------------------------------------------------------
+\begin{thebibliography}{99}% 文献数が10以上の時 {99}，9以下のとき{9}
+
+\bibitem{oikawa2005}
+Y. Oikawa, M. Goto, Y. Ikeda, T. Takizawa and Y. Yamasaki, ``Sound field measurements based on reconstruction from laser projections,'' Int. Conf. Acoust., Speech Signal Process. (ICASSP), vol.IV, pp.661--664, Mar. 2005. 
+
+\bibitem{ikeda2006}
+池田雄介，後藤亮，岡本直毅，滝澤俊和，及川靖広，山崎芳男，“レーザCTを用いた再生音場の測定，”日本音響学会誌，vol.62，no.7，pp.491--499，Jul. 2006．
+
+\bibitem{yatabe2014}
+K. Yatabe and Y. Oikawa, ``PDE-based Interpolation Method for Optically Visualized Sound Field,'' Int. Conf. Acoust., Speech Signal Process. (ICASSP), pp.4771--4775, Florence, May 2014.
+
+\bibitem{ikedaGosa}
+池田雄介，岡本直毅，後藤亮，小西雅，及川靖広，山崎芳男，“レーザトモグラフィを用いた音圧分布測定における精度，”日本音響学会誌，vol.64，no.1，pp.3--7，Jan. 2008．
+
+\bibitem{Tikhonov}
+A.N. Tikhonov, ``Solution of incorrectly formulated problems and the regularization method,'' Soviet Math. Dokl., vol.4, pp.1035--1038, 1963.
+
+\bibitem{fourierAcoust}
+E. G. Williams, Fourier Acoustics: Sound Radiation and Nearfield Acoustical Holography, Academic, 1999.
+
+\bibitem{hankel}
+P. K. Kythe, Fundamental Solutions for Differential Operators and Applications, Birkhauser,1996.
+
+\bibitem{InverseProblem}
+V. Isakov, Inverse Problems for Partial Differential Equations, Springer New York, 2006.
+
+\bibitem{simulation}
+日本建築学会，はじめての音響数値シミュレーション　プログラミングガイド，コロナ社，東京，2012．
+
+\bibitem{appliedInverseProblem}
+小國健二，応用例で学ぶ逆問題と計測，オーム社，東京，2011．
+
+\end{thebibliography}
+%---------------------------------------------------------------------------------------------------
+
+
+\appendix
+%---------------------------------------------------------------------------------------------------
+\section{参考文献の書式}	\label{sec:bibformat}
+%---------------------------------------------------------------------------------------------------
+文献は，次の点に留意するとともに以下に示す形式に従ってリストする．
+
+\begin{enumerate}
+ %\item 付録Gの「学術雑誌略語表」に掲載されている雑誌名は，同表に従って略
+ % 語で記す．
+ \item 著者が複数の場合には，全著者の氏名を記入する．なお，欧文の場合に
+       はイニシャルと姓名を記入し, A.G. Wine のようにイニシャルと姓名の
+       間にのみ半角スペースを挿入する．
+ \item 英文論文の標題中の単語については，文頭以外は小文字を使用する．
+ \item 欧文文献においては，常に半角ピリオド「.」と半角カンマ「,」を用い
+       る．和文文献においては，句点には全角の「，」を用い，「vol.」，
+       「no.」，「pp.」あるいは月名等の省略記号及び行末の読点には半角ピ
+       リオド「.」を用いる．なお，vol.J62-B， no.1，pp.20--27等の場合には，
+       半角ピリオド「.」の後ろにはスペースは挿入しない．
+       （和文文献の表題の終わり「，\kern-.5em''」は「\verb=，\kern-.5em''=」と
+       して，間を少し詰めるのが通例となっています．）
+ \item 発行の年月を記載する場合には，月年の順で，月名には英語を，年には
+       西暦を用いる．
+\end{enumerate}
+
+%\section{文献リストの例}
+
+\subsection{雑誌}
+
+著者名，``標題，\kern-.5em''雑誌名，巻，号，pp.を付けて始め--終りのペー
+ジ，月年.
+\begin{itemize}
+ \item 山上一郎，山下二郎，``パラメトリック増幅器，\kern-.5em'' 
+       信学論（B），vol.J62-B，no.1，pp.20-27，Jan. 1979.
+ \item W. Rice, A.C. Wine, and B.D. Grain, "Diffusion of impurities
+       during epitaxy," Proc. IEEE, vol.52, no.3, pp.284-290, March
+       1964. 
+\end{itemize}
+
+\subsection{著書，編書}
+
+著者名，書名，編者名，発行所，発行都市名，発行年.
+\begin{itemize}
+ \item 山田太郎，移動通信，木村次郎（編），（社）電子情報通信学会，東京，1989.
+ \item H. Tong, Nonlinear Time Series: A Dynamical System Approach,
+       J.B. Elsner, ed., Oxford University Press, Oxford, 1990.
+\end{itemize}
+
+\subsection{著書の一部を引用する場合}
+
+著者名，``標題，\kern-.5em'' 書名，編者名，章番号またはpp.を付けて始め--終りのページ，
+発行所，発行都市名，発行年. 
+\begin{itemize}
+ \item 山田太郎，``周波数の有効利用，\kern-.5em'' 移動通信，木村次郎
+       （編），pp.21--41，
+       （社）電子情報通信学会，東京，1989.
+ \item H.K. Hartline, A.B. Smith, and F. Ratlliff, "Inhibitory
+       interaction in the retina," in Handbook of Sensory Physiology,
+       ed. M.G.F. Fuortes, pp.381-390, Springer-Verlag, Berlin, 1972. 
+\end{itemize}
+
+\subsection{国際会議}
+
+著者名，``標題，\kern-.5em'' 会議名，no.を付けて論文番号，pp.を付けて始
+め--終りのページ，開催都市名，国名，月年.
+\begin{itemize}
+ \item Y. Yamamoto, S. Machida, and K. Igeta, 
+       ``Micro-cavity semiconductors with enhanced spontaneous　
+       emission,''
+       Proc. 16th European Conf. on Opt. Commun., no.MoF4.6, pp.3-13,
+       Amsterdam, The Netherlands, Sept. 1990. 
+\end{itemize}
+
+\subsection{国内大会，研究会論文集}
+
+ 著者名，``標題，\kern-.5em''学会論文集名，分冊または号，no.を付けて論文
+ 番号，pp.を付けて始め--終りのページ，月年.
+ \begin{itemize}
+  \item 川上三郎，川口四郎，``紫外域半導体レーザ，\kern-.5em''1995信学全
+	大，分冊2，no.SB2-1，pp.20--21，Sept. 1995.
+ \end{itemize}
+
+
+
+\end{document}

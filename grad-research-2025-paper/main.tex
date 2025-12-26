@@ -1,0 +1,526 @@
+\documentclass{oikenGodo}
+
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{amsmath,subfigure}
+\usepackage{bm}
+\usepackage[hang,small,bf]{caption}
+\usepackage[subrefformat=parens]{subcaption}
+\captionsetup{compatibility=false}
+
+\title{偏光高速度干渉計を用いた球面座標系における 3 次元音場復元}%改行したい場合は\\を挟む
+\labname{及川靖広研究室} 
+\grade{b}{4}	% {b}{4} か {m}{2}
+\author{柳 泰鉉}	% 苗字と名前の間は半角の空白
+
+\begin{document}
+\maketitle
+
+
+%---------------------------------------------------------------------------------------------------
+\section{まえがき}
+%---------------------------------------------------------------------------------------------------
+ 光学的音響計測では，その非接触に音場を収録できる特徴から，様々な音響計測に利用されてきた。
+ 計測機器や計測法においては，レーザードップラー振動計(LDV)~\cite{oikawa2005}やシュリーレン法\cite{nachanant2017}が用いられ，
+ 用途は楽器計測\cite{ishikawa2020,gren2006}やトランスデューサ音場のイメージング\cite{zipser2001,bertling2014}など様々な応用がなされている。
+ 近年では，並列位相シフト干渉法(PPSI)を利用した偏光高速度干渉計を用いることで，高解像度な可聴音場の可視化が実現され~\cite{ishikawaPPSI,yatabe2019}，
+ これらがマイクロホンの設置が難しい音響計測や音源近傍の音の計測に有用であることが確認されている~\cite{oikawa2021}。
+ トランスデューサの空間的特性，例えば指向性や音響インテンシティなどの特徴を評価するのには，しばしばマイクロホンアレイが用いられる。
+ しかしながら，マイクロホンアレイでは空間的な解像度に限界があり，加えて計測する音場内に設置すると反射や回折などにより音場を乱してしまう可能がある。
+ したがって，このようなトランスデューサの評価にもPPSIをはじめとする光を用いた計測は有用であると考えられる。
+ しかし，マイクロホンは空間上である一点での音圧を測定することができるが，光学的音響計測では光路上の音圧が線積分された状態でデータに収められる。
+ つまり，光路上に存在する各地点での音圧を直接確認することは難しい。
+ 
+ そのため，より詳細な音場の理解のために，得られたデータから音場の再構成を行なう復元手法が用いられてきた。
+ 復元にはコンピュータトモグラフィ(CT)法~\cite{ct1,ct2,ct3,ct4}がしばしば使用されるが，本手法は音の物理的特性を考慮していないため，復元の精度には限界がある。
+ 
+ 一方で，物理モデルに基づく手法が近年は提案されており~\cite{yatabe2016,yatabe2017}，より物理的特性に準じた音場復元が可能となった。
+ 更に，こういった手法には計測した音場をモデル化できるという利点がある。
+ PPSIへの復元適用例~\cite{ishikawa2021}では，走査をせずに音場を瞬時に撮影できる利点から，球面座標系での3次元音場復元を行っている。
+ しかしながら，この先行研究では非対称音場には対応しておらず，なおかつ音源が観測する領域に含まれる場合では提案されていない。 
+
+ そこで本研究では，新たに非対称音場にも対応した外部問題を考える物理モデルを提案する。
+ 本モデルの有効性を確認するため，球面座標系での3次元音場復元をシミュレーションおよび偏光高速度干渉計を用いた実験を行った。
+ シミュレーションではノイズに対する頑健性とパラメータでの性能変化を検証を行い，その精度を確認した。
+ また，実測データを用いた実験では，2つのトランスデューサを組み合わせ，実空間での非対称な音場に対する復元精度を確認した。
+ 以上の復元結果に加え，考察から得られた今後の展望を4章のむすびで述べていく。
+ 
+
+%---------------------------------------------------------------------------------------------------
+\section{理論}
+%---------------------------------------------------------------------------------------------------
+本章では，初めに光学計測の原理および本研究で採用した計測機器である偏光高速度干渉計について説明を行う。続いて，復元に用いる物理モデルと，復元手法について順を追って説明する。
+\subsection{計測原理}
+光学計測においては，空気の屈折率の変化によって生じる光路差から，光の位相差を計測することで，音圧に関する情報を得ることが可能である。
+本節ではその計測原理について説明する。
+
+初めに，断熱変化を仮定した, 空中可聴音場を考える。気体の屈折率と密度の関係をGladstone-Daleの式\cite{Gladstone1863}から得ることで, 空気の屈折率$n$と音圧$p$の関係は, 大気圧$p_0$に対して音圧$p$が十分小さいとき, 
+\begin{align}
+\label{rfl}
+n(\boldsymbol u, t)=n_0 + \frac{n_0-1}{\gamma p_0}p(\boldsymbol u , t)    
+\end{align}
+%
+と近似できる。ここで, $\boldsymbol u$は位置ベクトル, $t$は時刻, $n_0$は大気圧下での屈折率をそれぞれ表す。
+このとき, 光の位相$\psi$と空気の屈折率$n$の関係は, 
+%
+\begin{align}
+\label{phs}
+    \psi(\boldsymbol u, t)=k\int_{L(\boldsymbol u)}n(\boldsymbol v, t)d\boldsymbol v
+\end{align}
+
+のように記述でき, $k$は波数, $L$は光路を表す。また, 式(\ref{rfl})を式(\ref{phs})に代入することで, 
+
+音圧と位相の関係式は以下のように表せる。
+
+\begin{equation}
+\label{S_prs}
+    \psi(\bm u, t)=k n_0 \int_{L(\bm u)}d\bm v +k\frac{n_0-1}{\gamma p_0}\int_{L(\bm u, t)}p(\bm v, t)d\bm v,
+\end{equation}
+ここで$\bm{u}$は位置，$\psi$は光の位相 $k$光の波数，$n_0$ 媒質の屈折率，$L$ は光路，${\gamma}$ 空気中の比，$p_0$ は大気圧，$p$ は音圧である。
+式\eqref{S_prs}より，光の位相と音圧積分値は比例関係にあることが確認できる。
+したがって，光の位相を計測できれば音圧の情報を得ることが可能である。
+\begin{figure*}[t]
+	\centering
+	\includegraphics[width=0.95\linewidth]{figures/ppsi_setup.eps}
+	\caption{並列位相シフト干渉法 (PPSI) のための偏光高速度干渉計。画像は文献\cite{ishikawa2018-2}より引用。}
+	\label{fig:PPSI}
+\end{figure*}
+\subsection{偏光高速度干渉計}
+偏光高速度干渉計を用いたPPSIの開発により時間的にも空間的にも高分解能な音場の瞬時定量計測と可視化が可能となった。
+計測データは高速度カメラに記録されるので，ある領域での音の伝搬を瞬時に可視化計測することができる。
+計測対象に特に制限はないが，例えば音源近傍や流れ内部などのマイクロホンを設置しにくい場所への適用が可能である。
+
+PPSIのための偏光高速度干渉計を\figref{fig:PPSI}に示す。
+位相シフト干渉法と呼ばれる光学位相分布計測手法と，偏光計測技術および偏光高速度カメラを組み合わせたものであり，
+PPSIを実現する光学システムとなっている。
+高速度カメラを用いるシステムで，対象とする領域の音場を瞬時に定量的に２次元イメージングすることが可能である。
+
+具体的な計測の過程を説明すると，
+初めにLaserから発した光はWollaston prismで2種類の偏光に別れ，Reference planeで更に2つの光に分けられる。
+光の1つは測定領域を通過してMirrorで反射して戻ってくる測定光(Object light)となり，もう1つはMirrorで反射して戻る参照光(Reference light)となる。
+これら2つの光が合流し光の位相差が生じる。
+これらが複数の偏光素子を通過することで複数の干渉縞が偏光高速度カメラ(High-speed polarization camera)に記録される。
+この得られた干渉縞に対してPPSIを適用することにより，光の位相を得ることができる。
+位相はラップされているため，更にアンラップ手法~\cite{yatabe2018}を適用することによって音場の可視化画像が得られる。
+% また，計測値は光路上の音圧を積分した量に比例し，光路上での積分は光路と垂直方向に指向性を作る効果がある\cite{Antoni_EURONOISE2012}。そのため，偏光高速度干渉計を用いた収録は，光路と垂直方向から到達する音を強調して集音することが可能である。
+
+\subsection{Helmholtz方程式の球面調和関数展開}
+本章では，Helmholtz方程式の球面調和関数展開を考える。
+音源は観測領域内部にあるものとし，外部問題における放射音場を復元する。
+初めに，周波数領域において球面座標系$(\zeta,\theta,\phi)$を$(x,y,z) = (\zeta \sin \theta \cos \phi,\zeta \sin \theta \sin\phi,\zeta \cos\theta)$のように定義する。角周波数$\omega_s$におけるHelmholtz方程式は以下のように表される~\cite{willium1999}。
+\begin{equation}
+\label{eq:helmholtz}
+    \left (\Delta_s + k^2_s \right)
+    p \left(\zeta, \theta, \phi, \omega_s \right)
+    = 0,
+\end{equation}
+ここで，$\Delta_s$は，
+\begin{equation}
+\begin{split}
+      \Delta_s = \frac{1}{\zeta^2} \frac{\delta}{\delta \zeta} \left(\zeta^2 \frac{\delta}{\delta \zeta} \right)
+            + \frac{1}{\delta^2 \sin^2\theta} \frac{\delta}{\delta \theta} \left(\sin\theta \frac{\delta}{\delta \theta} \right)\\
+            + \frac{1}{\zeta^2 \sin^2\theta} \frac{\delta^2}{\delta \phi^2},
+\end{split}
+\end{equation}
+であり， 
+式\eqref{eq:helmholtz}を球面調和関数展開すると，
+%
+\begin{equation}
+    \label{eq:expansion}
+    p \left(\zeta, \theta, \phi, \omega_s \right) = \sum^{\infty}_{l = 0} \sum^l_{m = -l} a_{lm}h_l^{(2)}(k_s\zeta)Y^{m}_l \left(\theta,\phi\right),
+\end{equation}
+%
+のように各座標の音圧が表される。ここで，$k_s = \omega_s / c_s$ は音の波数，$c_s$ は音速，$h_l^{(2)}$は$l$次の第二球ハンケル関数，$a_{lm}$ は係数,$Y_l^m$は$l$次かつ$m$位の球面調和関数であり，
+%
+\begin{equation}
+    Y^{m}_l\left(\theta, \phi \right) = \sqrt{\frac{2m+1}{4\pi}\frac{\left(l - m\right)!}{\left(l + m\right)!}} P^m_l(\cos\theta)e^{im\phi}
+\end{equation}
+にて表される。式内の$ P^m_l$ はルジャンドル倍関数である。
+球面調和関数は音場を表現する基底と考えることができ，複数の次数と位数の関数を足し合わせることによって，様々な指向性の音場を表現することが可能である~\cite{kyumen}。
+
+上記の式\eqref{eq:expansion}において，$h_l^{(2)}$と$Y_l^m$は計測に依存しない。つまり，係数$a_{lm}$を得ることができれば音場を再構成することが可能である。
+
+\subsection{物理モデルに基づく音場復元}
+
+$a_{lm}$を求めるため，前節の物理モデルを用いてPPSIより得られるデータを表現する。
+式\eqref{S_prs}より，光学計測から得られるデータは,
+
+\begin{equation}
+    \label{eq:data}
+    d_i = \int_{\bm{r}_{s,i}}^{\bm{r}_{e,i}}p(\bm{r},\omega_s)d\bm{r},
+\end{equation}
+のように定式化される。ここで$d_i$は$i$番目のデータ，$\bm{r}_{s,i}$ と $\bm{r}_{e,i}$ はそれぞれ$i$番目のデータにおける線積分の始点と終点を表す。
+式\eqref{eq:expansion}を式\eqref{eq:data}に代入すると，
+% \begin{equation}
+%     \label{eq:data}
+%     d_{u,v,\phi} =\sum_{l=0}^M \sum_{m=-l}^l a_{lm} \bar{\Upsilon}_{l,m,u,v,\phi},
+% \end{equation}
+% where,
+% \begin{equation}
+% \label{eq:Ups}
+% \bar{\Upsilon}_{m,m',l,\kappa,\phi} = \int_{x_1}^{x_2} h_m(k_r r(\xi,y_{l,\phi},z_{\kappa,\phi}))\sqrt{\frac{(2n+1)(m-m')}{4\pi(m+m')}}P_m^{m'}(\cos\theta (\xi,y_{l,\phi},z_{\kappa,\phi})) e^{im\phi(\xi,y_{l,\phi},z_{\kappa,\phi})}d\xi.
+% \end{equation}
+\begin{figure*}[t]
+	\centering
+	\includegraphics[width=0.95\linewidth]{figures/simu_scheme.pdf}
+	\caption{シミュレーションによるPPSIの可視化画像を生成過程}\label{fig:simu}
+\end{figure*}
+\begin{equation}
+    \label{eq:data}
+    d_i =\sum_{l=0}^M \sum_{m=-l}^l a_{lm} \bar{\Upsilon}_{l,m,i},
+\end{equation}
+のように得られる。ただし，実際の計算では最大展開次数は整数に置き換える必要があるため，$M$で切り捨てている。ここで$\bar{\Upsilon}_{l,m,i}$は
+\begin{equation}
+\label{eq:Ups}
+\begin{split}
+\bar{\Upsilon}_{l,m,i} = & \int_{\bm{r}_{s,i}}^{\bm{r}_{e,i}} h^{(2)}_l(k_s \zeta(\bm{r}))\sqrt{\frac{2m+1}{4\pi}\frac{\left(l - m\right)!}{\left(l + m\right)!}}\\
+& \hspace{10mm} P_l^{m}(\cos\theta(\bm{r})) e^{im\phi(\bm{r})}d\bm{r}.    
+\end{split}
+\end{equation}
+のように表される。
+この式は行列を用いて書き換えることが可能であり，
+% Eq.\eqref{eq:data} can be rewritten in the matrix form as
+\begin{equation}
+\label{eq:problem}
+\mathbf{d} = \Upsilon \mathbf{a},
+\end{equation}
+ここで $\mathbf{d}$ は $d_{i}$を要素とするデータベクトル，$\Upsilon$ はデータ$d_{i}$ と 係数$a_{lm}$ に対応する $\bar{\Upsilon}_{l,m,i}$を要素とした行列， $\mathbf{a}$ は $a_{lm}$を要素とするベクトルである。 
+
+$\mathbf{a}$を得るため，本研究では先行研究\cite{yatabe2017,ishikawa2021}と同様に，打ち切り特異値分解を用いて $\Upsilon$の疑似逆行列を求める。
+行列$\Upsilon$は
+% 
+\begin{equation}
+\label{eq:factorize}
+\Upsilon = U\Sigma V^H
+\end{equation}
+% 
+のように分解できる。ここで，$U$と$V$は単位行列であり，$\Sigma$は対角行列，$ ^H$はエルミート転置を表す。$\Sigma$の対角要素は$\sigma_1 \geq \sigma_2 \geq ...$のように降順で並んでおり，$\sigma_i$は$i$番目の特異値を表す。したがって，行列$\Upsilon$の疑似逆行列は，
+%
+\begin{equation}
+\Upsilon^\dag_\tau = V \Sigma^\dag U^H
+\end{equation}
+%
+と表せる。ここで，$\Sigma^\dag = \text{diag}(1/\sigma_1,1/\sigma_2,...)$であり， $\text{diag}(\cdot)$は正方対角行列を出力する関数を表す。
+しかし，行列$\Sigma^\dag$の成分が大きい場合，計測結果のノイズの影響を強く受けてしまう。そのため，ノイズの影響を軽減するため閾値$\tau$で特異値を打ち切り，$\Sigma^\dag$の代わりに，
+
+\begin{equation}
+    \Sigma^\dag_\tau = \text{diag}(1/\sigma_1,1/\sigma_2,...,0,...,0)
+\end{equation}
+を採用する。
+ここで，$\sigma_i<\tau\sigma_1$を満たす行列$\Sigma^\dag$の全ての対角成分は0に置換される。
+以上から，係数ベクトル$\mathbf{a}$は以下のように求められる。
+ % \newpage
+\begin{equation}
+\label{eq:ans}
+\mathbf{a} = \Upsilon^\dag_\tau \mathbf{d},
+\end{equation}
+一度$\mathbf{a}$ が求められれば，各地点での音圧は $\mathbf{a}$ を 式\eqref{eq:expansion}に代入することで得ることができる。
+
+\subsection{計算工程}
+
+前述の理論を用いて,PPSIから得られたデータから復元する。
+実際に行う計算過程を本節にまとめる。
+
+1.PPSIにより音場を回転させながら収録
+
+2.式\eqref{eq:Ups}から$\Upsilon$を計算する。
+
+3.式\eqref{eq:ans}より，データ$\mathbf{d}$と計算した$\Upsilon$より係数$\mathbf{a}$を得る。
+
+4.式\eqref{eq:expansion}を計算し，各座標での音圧値を得ることで復元。
+
+以上が提案した計算工程である。
+計算の際に座標$(\zeta,\theta,\phi)$の設定が必要となるが，可視化画像内に音源を含むことから，音源の画素を原点として設定することで，1画素あたりの距離から画素ごとの位置を計算する。その後，球面座標に変換することで，座標を決定している。
+
+画素間距離の算出だが，これは周波数が既知であるsin波を可視化し，画像を2次元フーリエ変換した際に得られる時空間スペクトルを利用することで得た。
+具体的な画素間距離$D$を求める過程を以下に示す。
+可視化により得られた波の画像を，平面波と考え，2次元波動方程式を2次元フーリエ変換すると，波数と数波数の関係が得られる。
+Nachanant氏~\cite{nachanant2017}によると波数と周波数の関係は，時空間上では%nachanさんの論文引用
+\begin{align}
+\label{eq:kandf}
+k_x^2 + k_y^2 = \left ( \frac{2\pi f_s}{c} \right )^2
+\end{align}
+のように表される。ここで，$k_x$と$k_y$はそれぞれ波数の水平成分と垂直成分を表す。
+\eqref{eq:kandf}より，特定の周波数音場のピークは，時空間スペクトル上では円形で現れる。
+したがって，周波数が既知であれば，現れるスペクトル上のピーク位置は予測が可能である。
+
+ここからは，$k_x$軸上に現れるスペクトルのみを考える。
+ピーク位置を$k_p$，サンプリング波数を$K = 1/D$とし，$k_x$軸上の総波数ビン数を$N$，$k_x = 0$から$k_x = k_p$ までの波数ビン数を$n_p$とする。
+このとき，これらの比は
+\begin{align}
+\frac{k_p}{K}=\frac{n_p}{N}
+\end{align}
+の関係が成り立ち，$K=1/D$であるから，
+\begin{align}
+D = \frac{n_p}{Nk_p}
+\end{align}
+となり，画素間の距離を定量的に求めることができる。
+以上の手法用いて，画素間距離はおよそ$6.0\times10^{-4}$ mであることが求められている。
+\begin{table}[t]
+\caption{シミュレーション時のパラメータ}\label{tab:param}
+\begin{center}
+\begin{tabular}{ll}
+\Hline 
+% 最大展開次数 $M$ & 5\\
+音の周波数 $f_s$ & 15,000 Hz\\ %\hline
+音速 $c_s$ & 340 m/s\\ 
+ピクセル数 & 251$\times$251 \\ 
+% 画素間距離 & $6.0\times10^{-4}$ m\\ 
+積分角度間隔  & 5 deg\\
+データベクトル長 & 1,813,072\\
+閾値 $\tau$ &$10^{-5}$\\
+\Hline
+\end{tabular} 
+\end{center}
+% \vspace{-5mm}
+\end{table}
+%---------------------------------------------------------------------------------------------------
+\section{実験および結果}
+%---------------------------------------------------------------------------------------------------
+本章ではシミュレーションによって生成した音場に対して復元を行った結果と，実測データから復元を行った結果の2種類を示すのと同時に，それらの結果に対し考察を述べる。
+%---------------------------------------------------------------------------------------------------
+\subsection{シミュレーション}
+%---------------------------------------------------------------------------------------------------
+
+計算技術言語MATLABを用いて生成した音場から，音場復元を行う数値シミュレーションを行った。
+$\mathbf{a}$をランダムに与えて生成した音場に対して線積分を複数の角度から行い，ガウシアンノイズを付与することで
+%PPSIで可視化した際と同様に音圧積分値を含む
+音場可視化画像を得た。シミュレーション時のパラメータを\tabref{tab:param}に，可視化画像とその生成過程を\figref{fig:simu}示す。
+なお，解像度が251$\times$251に設定されているのは，PPSIにて可視化できる範囲の実距離がおよそ15 cmとなっており，同等になるよう設定したためである。
+実際の計測では，音源を回転させながら複数の角度から計測を行う。
+そのためシミュレーションでは，MATLABのImage Processing Toolbox内に実装されているラドン変換を行う関数radon()用いて，引数で指定できる積分の角度を$\phi = 0$から$\phi = 175$まで5度刻みで指定し，計36個の角度からの可視化画像を得た。
+また，PPSIでの収録された音場は円形の2次元画像で収録される。そのため，線積分後に計測領域外の音場をマスキングすることで2次元画像を作成した。
+\begin{figure}[t]
+\centering
+	\includegraphics[width=1.05\columnwidth,trim = 20 0 0 0]{figures/onba_simu.png}
+	% \vspace{-3mm}
+	\caption{3次元空間上に復元された音場(シミュレーション)。SNR = 0で生成したデータから，最大展開次数 $M$ = 5に設定して復元された。ただし，一定の値未満の音圧は切り捨てて非表示にしてある。}\label{fig:onba}
+ \vspace{-3mm}
+\end{figure}
+
+\begin{figure*}[t]
+
+\begin{minipage}[b]{1\columnwidth}
+    \centering
+	\includegraphics[width=1\columnwidth,trim = 15 0 0 0,clip]{figures/SNR_test.png}
+     \subcaption{条件(i)における復元結果の比較。1行目からSNR = 0，-20，-40 dB のデータから復元した結果を掲載している。}
+\end{minipage}
+\begin{minipage}[b]{1\columnwidth}
+    \centering
+	\includegraphics[width=1\columnwidth,trim = 15 0 0 0,clip]{figures/M_test.png}
+	\subcaption{条件(ii)における復元結果の比較。1行目からM = 3，5，8 で復元した結果を掲載している。}
+\end{minipage}
+	\caption{シミュレーションによる復元結果の比較(実験)。各行の上部は復元音場，下部は復元音場と真の音場の絶対誤差をそれぞれ各平面の成分を表示したものとなっている。各画像内の赤枠内の画素は復元時の計算から除外した箇所となっている。}\label{fig:err_simu}
+\end{figure*}
+
+\begin{figure}[t]
+\centering
+	\includegraphics[width=0.21\columnwidth]{figures/Transducer_tate.png}
+    \vspace{3mm}
+	\caption{トランシュデューサおよび支柱}\label{fig:trsd}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+	\includegraphics[width=1.05\columnwidth,trim = 20 0 0 0]{figures/SIKOU.png}
+	% \vspace{-3mm}
+	\caption{実測データから3次元空間上に復元された音場。一定の値未満の音圧は切り捨てて非表示にしてある。}\label{fig:onba_real}
+ \vspace{-3mm}
+\end{figure}
+
+\begin{figure*}[t]
+	\centering
+	\includegraphics[width=0.7\linewidth,trim = 0 180 0 0]{figures/Trans_sq.png}
+	\caption{最大展開次数M=5で復元結果の比較(実験)。図の上から1行目にPPSIによる音場可視化画像，2行目から4行目の順に，$M = 3，5，8$の場合の復元結果を掲載している。2行目以降各行の上部は復元結果，下部は絶対誤差を示している。赤枠内のトランスデューサと支柱を含む画素は計算の際に除外している。カラー軸は音圧積分値(LSP)を示す。}\label{fig:err_trans}
+\end{figure*}
+
+次に，得られた可視化データをベクトル化，式\eqref{eq:Ups}より行列を計算した。
+その後，式\eqref{eq:ans}により係数$\mathbf{a}$を推定し，各座標の音圧を計算することで音場の復元を行なった。
+本研究ではトランスデューサーなどの音源を可視化音場内に含まない外部問題を想定し，外部問題を考えるため画像中心部付近の画素は計算から除外した。
+復元結果を，3次元空間内にプロットした図を\figref{fig:onba}に示す。
+提案した手法により，3次元的な音場が復元されたことが確認された。
+
+続いて，ノイズに対する頑健性，最適な最大展開次数 M を調べるために，
+
+$\mathbf{(i)}$Signal-to-noise ratio(SNR) ＝ 0，-20，-40 dB でノイズを付加したデータに対して最大展開次数 M = 5 で復元した場合
+
+$\mathbf{(ii)}$SNR = 0 dBでノイズを付加したデータに対して，最大展開次数 M = 3, 5, 10で復元した場合\\
+の2条件で復元を行った。復元精度を比較するため，x = 0でのyz平面，y = 0でのxz平面，z = 0でのxy平面における真の音場と復元音場の音圧の差分を取った結果を結果を\figref{fig:err_trans}にそれぞれ示す。
+
+条件$\mathbf{(i)}$の結果について，SNR = -40 dB の場合を除いて，誤差画像の赤枠外の音場には誤差がほとんど見られず，高精度に3次元音場復元できたことが分かる。
+対照的に，SNR = -40 dB の場合，音場全体に大きな誤差が見られ，真の音場にはない波形が確認された。
+この原因としては，ノイズの影響により正確な音場の推定ができず，復元が破綻してしまったことが考えられる。
+このことから，少なくともSNR = -20 dB以上での条件であれば破綻せずに復元が可能であることが確認された。
+一方で，いずれの復元結果においても，音場の中心部に大きい誤差が確認できる。
+また，SNRが低くなるほどその誤差が大きくなっていることも確認できる。
+今回は外部問題を想定したため，音源は基本的にトランスデューサなどに阻まれ計測されないことを前提としている。
+そのため，除外した原点付近のピクセルによって，音源近傍の音場の復元が困難になり出力が発散したのに加え，ノイズが大きいほどその影響が大きくなったと考えられる。
+
+条件$\mathbf{(ii)}$での結果を見ると，$M$ = 3 の場合を除いて赤枠外の音場では高精度に音場を復元できたことが確認できる。
+それとは対照に，$M$ = 3の場合では比較的大きい誤差が見られ，詳細な波形を再現できていないことが分かる。
+これは，音場生成時に最大展開次数を$M$ = 5 で設定したため，再現できない音場の指向性が存在することが原因であると考えられる。
+また，条件$\mathbf{(i)}$と同様に復元結果の原点付近に大きい誤差があることが確認できる。
+それに加え，最大展開次数$M$が大きくなるにつれ，復元音場に中心部のノイズが広がっていくのが結果から確認できる。
+これは，最大展開次数$M$が大きくなることによって，より複雑な指向性の波を再現することに起因すると考えられる。
+したがって，除外した画素やノイズの影響によって，より複雑な形で推定が行われ，誤差となったと考えられる。
+以上のことから，音源によって最適な最大展開次数$M$を設定する必要があると考えられる。
+
+\begin{table}[t]
+\caption{実験条件}\label{tab:cond}
+% \vspace{-6mm}
+\begin{center}
+\begin{tabular}{ll}
+\Hline
+計測\\
+\hline
+音の周波数 $f_s$ & 40,000 Hz\\
+撮影速度 & 100,000 fps\\
+積分角度間隔  & 5 deg\\
+ピクセル数 & 94$\times$158 \\ 
+\hline
+復元\\
+\hline
+音速 $c_s$ & 340 m/s\\ 
+% 画素間距離 & $6.0\times10^{-4}$ m\\ 
+データベクトル長 & 491,580\\
+閾値 $\tau$ &$10^{-5}$\\
+音源位置[縦 横] & [30 79]\\
+\Hline
+\end{tabular} 
+\end{center}
+% \vspace{-5mm}
+\end{table}
+%---------------------------------------------------------------------------------------------------
+\subsection{実測データによる復元}
+%---------------------------------------------------------------------------------------------------
+2つの超音波トランスデューサを用いて組み合わせて生成した非対称音場を偏光高速度干渉計を用いて撮影し，得られたデータから音場の復元を行った。
+計測にはできるだけ多くの画素を使うため，また回転軸を固定するために，3Dプリンタを用いてトランデューサを固定する支柱を作成した。
+作成したトランスデューサを\figref{fig:trsd}に示す。
+計測はシミュレーションと同じく，$\phi = 0$から$\phi = 175$まで5度刻みで計測し，計36個の角度からの可視化画像を得た。
+トランスデューサ付近の画素を原点とし，それぞれ$M = 3, 5, 8$の場合に各画素に対応する$\Upsilon$を計算，係数$\mathbf{a}$の推定を行った。
+
+復元した3次元音場をプロットした図を\figref{fig:onba_real}に示す。
+その復元結果を各角度から再度積分し，差分を取って比較したものを\figref{fig:err_trans}に示す。
+
+\figref{fig:onba_real}より，実際の計測によって得られた音圧積分値から，3次元放射音場が復元された。
+\figref{fig:err_trans}をみると，角度ごとに実測データに近い指向性をある程度復元できていることが分かる。
+最大展開次数ごとの結果を見ると$M$が大きくなるにつれ，より細かい指向性が再現されていることが確認できる。
+例えば，degree:0の誤差画像の右側に注目すると，$M$ = 3のときには音源から右斜め上方向に延びる形で誤差が見られるが，最大展開次数が増えるにつれその誤差が減少しているのが確認できる。
+このことからより複雑な音場を再現するのに対して，より高い最大展開次数を設定することが有効であると考えられる。
+一方で，同じく除外した支柱の部分では，破綻せずに音場を復元できており，除外の影響を大きく受けずに復元されたことが確認できる。
+しかし，シミュレーションと同様に，いずれの復元結果の中心部にも大きな誤差が確認でき，計算時に除外した画素の影響が見られる。
+また，いずれの結果もPPSIの可視化結果と比べて波形の誤差が多く，特に音圧積分値に大きな誤差が見られる。
+このような誤差の原因として，計測時の回転軸と復元時に設定した回転中心にズレがあり，結果的に音源位置に誤差が生じたため，推定が困難になったことが考えられる。
+
+
+
+
+%---------------------------------------------------------------------------------------------------
+\section{むすび}
+%---------------------------------------------------------------------------------------------------
+本研究では物理モデルに基づく3次元音場復元法を提案し，それを用いて音場復元のシミュレーション,
+および実測データを用いた実験を行った。
+
+シミュレーションでは15kHzの音場の再現を行い，その精度を確認した。
+実験では，40kHzの超音波を可視化・実測データから3次元放射音場の再現を行い，大まかな指向性を再現することができた。
+
+一方で，ノイズの影響や$M$の設定の仕方により，本来の音場とは差の大きい音場が再現されることも確認された。
+最大展開次数を大きくすると，音場のより細かい指向性を再現できるが，$M$ = 8のシミュレーション結果では，除外した画素の範囲よりも外側に復元結果にノイズが広がる影響も見られる。
+また，実測データにおいては，音源位置のズレによって復元に大きく影響することが確認された。
+このことから，計測時に回転軸上に音源を固定する器具，または回転軸がズレた際に補正をする処理の必要性が考えられる。
+
+今後の展望としては，復元時に最適な最大展開次数$M$の検証と，よりノイズに対して頑強な固有値分解法を調査する所存である。
+また，実測データにおける復元誤差の検証と測定システムの改良を行っていく。
+%---------------------------------------------------------------------------------------------------
+\begin{thebibliography}{9}% 文献数が10以上の時 {99}，9以下のとき{9}
+\bibitem{oikawa2005}
+Y. Oikawa, S. Goto, Y. Ikeda, T. Takizawa and Y. Yamasaki, “Sound Field Measurements Based on Reconstruction from Laser Projections, ” IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP), Vol. 4, pp. 661–
+664, Mar. 2005.
+
+\bibitem{nachanant2017}
+C. Nachanant, K. Yatabe, K. Ishikawa and Y. Oikawa, “Spatio-temporal filter bank for visualizing audible sound field by Schlieren method, ” Applied Acoustics, Vol. 115, 
+pp. 109–-120, Jan. 2017.
+
+\bibitem{ishikawa2020}
+K. Ishikawa, K. Yatabe, and Y. Oikawa, ``Seeing the sound of castanets: Acoustic resonances between shells captured by high-speed optical visualization with 1-mm resolution'', The Journal of the Acoustical Society of America, Vol. 148, no. 5, pp. 3171--3180, Nov. 2020.
+
+\bibitem{gren2006}
+P. Gren, K. Tatar, J. Granström, N-E. Molin and E.V. Jansson , ``Laser vibrometry measurements of vibration and
+sound fields of a bowed violin''
+Meas. Sci. Tech., Vol. 17, No. 4, pp. 635–-644, Feb. 2006.
+
+\bibitem{zipser2001}
+L. Zipser and S. Lindner, ``Visualisation of vortexes and acoustic sound waves'' Proc. 17th Int. Congr. Acoust., Vol. 1, pp. 24--25, 2001.
+
+\bibitem{bertling2014}
+K. Bertling, J. Perchoux, T. Taimre, R. Malkin, D. Robert, A. D. Rakić, and T. Bosch, "Imaging of acoustic fields using optical feedback interferometry," Opt. Express, Vol. 22, No. 24, pp. 30346-30356, Dec. 2014. 
+
+\bibitem{ishikawaPPSI}
+K.Ishikawa, K.Yatabe, N.Chitanont, Y.Ikeda, Y.Oikawa, T.Onuma, H.Niwa, and M.Yoshii, ''High-speed imaging of sound using parallel phase-shifting interferometry,'' Optics Express, Vol. 24, No. 12, pp. 12922--12932, June. 2016.
+
+\bibitem{yatabe2019}
+矢田部浩平, 石川憲治, 谷川理佐子, 及川靖広, ``[解説論文] 光学的音響計測,'' 電子情報通信学会 基礎・境界ソサイエティ Fundamentals Review, Vol. 12, No. 4, pp. 259--268, Apr. 2019.
+
+\bibitem{oikawa2021}
+及川靖広， ``楽器の音の計測と信号処理，'' 日本音響学会講演論文集, pp. 1277--1278, Mar.2021.
+
+\bibitem{ct1}
+Antoni Torras-Rosell, Salvador Barrera-Figueroa, and Finn Jacobsen; "Sound field reconstruction using acousto-optic tomography." The Journal of the Acoustical Society of America., pp. 3786–-3793, Vol. 131, No .5, May. 2012. 
+
+\bibitem{ct2}
+Ole J. Løkberg, Morten Espeland, and Hans M. Pedersen, "Tomographic reconstruction of sound fields using TV holography," Appl. Opt., Vol. 34, pp. 1640--1645, Apr. 1995. 
+
+\bibitem{ct3}
+Y. Ikeda, N. Okamoto, T. Konishi, Y. Oikawa, Y. Tokita, and Y. Yamasaki
+"Observation of traveling wave with laser tomography."
+Acoust. Sci. \& Tech., Vol. 37, No. 5, pp. 231--238, Sep. 2016.
+
+\bibitem{ct4}
+E. Koponen, J. Leskinen, T. Tarvainen, and T. Pulkkinen,
+"Acoustic pressure field estimation methods for synthetic schlieren tomography."
+J Acoust Soc Am., Vol. 145, No. 4, pp. 2470--2479, Apr. 2019.
+
+
+\bibitem{yatabe2016}
+矢田部 浩平, 石川 憲治, 及川 靖広
+''Herglotz波動関数の球面調和関数展開による光学的測定データからの三次元音場復元''
+日本音響学会講演論文集, pp.387−388, Sep. 2016.
+
+\bibitem{yatabe2017}
+K.Yatabe, K.Ishikawa, and Y.Oikawa,
+"Acousto-optic back-projection: Physical-model-based sound field reconstruction from optical projections"
+Journal of Sound and Vibration, Vol. 394, No. 28, pp. 171-184, Apr. 2017.
+
+\bibitem{ishikawa2021}
+K. Ishikawa, K. Yatabe, and Y. Oikawa
+"Physical-model-based reconstruction of axisymmetric three-dimensional sound field from optical interferometric measurement"
+Measurement Science and Technology, Vol. 32, No. 4, pp. 045202, Apr. 2021.
+
+\bibitem{Gladstone1863}
+J. H. Gladstone and T. P. Dale, “Researches on the refraction, dispersion, and sensitiveness of liquids,” Philos. Trans. R. Soc. Lond., Vol. 153, pp. 317–343, 1863.
+
+\bibitem{yatabe2018}
+K. Yatabe, R. Tanigawa, K. Ishikawa, and Y. Oikawa
+"Time-directional filtering of wrapped phase for observing transient phenomena with parallel phase-shifting interferometry "
+Optics Express, Vol. 26, No. 11, pp. 13705-13720, May 2018.
+
+\bibitem{willium1999}
+E. G. Williams,
+Chapter 6 - Spherical Waves,
+Editor(s): Earl G. Williams,
+"Fourier Acoustics",
+Academic Press,
+pp. 183-234, 1999.
+
+\bibitem{kyumen}
+羽田 陽一, 
+"音の波数領域信号処理",
+電子情報通信学会 基礎・境界ソサイエティ Fundamentals Review, Vol. 11, No. 4, pp. 243-255, Apr 2018.
+
+\bibitem{ishikawa2018-2}
+K.~Ishikawa, K.~Yatabe, Y.~Oikawa, T.~Onuma, and H.~Niwa, ``Optical visualization of sound field inside transparent cavity using polarization high-speed camera,'' InterNoise, Aug. 2018.
+
+\end{thebibliography}
+%---------------------------------------------------------------------------------------------------
+
+
+\end{document}

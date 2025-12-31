@@ -158,3 +158,78 @@ class PINNModel_SIREN_altOmega(nn.Module):
 
     def forward(self, x):
         return self.net(x)
+    
+class PINNModel_SIREN_Flexible(nn.Module):
+    """
+    引数で構造を柔軟に変更できるSIRENモデル
+    """
+    def __init__(self, 
+                 in_features,        # 入力次元数 (例: x, y, t なら 3)
+                 out_features,       # 出力次元数 (例: p なら 1)
+                 hidden_layers,      # 中間層のレイヤー数 (例: 2)
+                 hidden_features,    # 中間層の入出力数 (例: 64)
+                 first_omega_0,      # 入力層のオメガ (例: 30.0)
+                 hidden_omega_0      # 中間層のオメガ (例: 1.0)
+                 ):
+        
+        super(PINNModel_SIREN_Flexible, self).__init__()
+        
+        # 初期化時に使用するためインスタンス変数に保存
+        self.hidden_omega_0 = hidden_omega_0
+        
+        layers = []
+        
+        # ---------------------------------------------------------
+        # 1. 最初の層 (First Layer)
+        # ---------------------------------------------------------
+        layers.append(SirenLayer(
+            in_features=in_features, 
+            out_features=hidden_features, 
+            is_first=True, 
+            omega_0=first_omega_0
+        ))
+        
+        # ---------------------------------------------------------
+        # 2. 中間層 (Hidden Layers)
+        # ---------------------------------------------------------
+        # 指定されたレイヤー数分だけ追加
+        for _ in range(hidden_layers):
+            layers.append(SirenLayer(
+                in_features=hidden_features, 
+                out_features=hidden_features, 
+                is_first=False, 
+                omega_0=hidden_omega_0
+            ))
+            
+        # ---------------------------------------------------------
+        # 3. 最終層 (Last Layer)
+        # ---------------------------------------------------------
+        layers.append(nn.Linear(hidden_features, out_features))
+        
+        # Sequentialにまとめる
+        self.net = nn.Sequential(*layers)
+        
+        # 最終層の重みを初期化
+        self._initialize_final_layer()
+
+    def _initialize_final_layer(self):
+        """
+        最終層は活性化関数がないため、中間層の設定に基づいて初期化します。
+        """
+        with torch.no_grad():
+            final_layer = self.net[-1]
+            in_features = final_layer.in_features
+            c = 6.0
+            
+            # 引数で渡された hidden_omega_0 を使用
+            omega_0 = self.hidden_omega_0 
+            
+            # 中間層と同じ初期化範囲を適用
+            limit = np.sqrt(c / in_features) / omega_0
+            final_layer.weight.uniform_(-limit, limit)
+            
+            if final_layer.bias is not None:
+                final_layer.bias.data.fill_(0.0)
+
+    def forward(self, x):
+        return self.net(x)

@@ -246,3 +246,53 @@ def generate_animation(model, dataset, save_dir=None, output_filename="wave_extr
     else:
         plt.close(fig)
         return None
+    
+
+def plot_complex_field(model, dataset, freq, save_dir=None, show_plots=True):
+    """
+    学習後の複素音圧場（振幅と位相）をプロットする
+    """
+    model.eval()
+    # グリッド生成
+    x = torch.linspace(-dataset.L/2, dataset.L/2, 200)
+    y = torch.linspace(-dataset.L/2, dataset.L/2, 200)
+    XX, YY = torch.meshgrid(x, y, indexing='xy')
+    
+    # モデルへの入力 (x, y)
+    X_input = torch.stack([XX.flatten(), YY.flatten()], dim=1).to(next(model.parameters()).device)
+    
+    with torch.no_grad():
+        # 出力は (N, 2) -> [Real, Imag]
+        pred = model(X_input)
+        pred_real = pred[:, 0].cpu().reshape(XX.shape)
+        pred_imag = pred[:, 1].cpu().reshape(XX.shape)
+    
+    # 複素数化
+    P_complex = pred_real + 1j * pred_imag
+    
+    # 振幅と位相
+    amplitude = torch.abs(P_complex)
+    phase = torch.angle(P_complex)
+    
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    
+    # 振幅プロット
+    im1 = axes[0].imshow(amplitude, extent=[-dataset.L/2, dataset.L/2, -dataset.L/2, dataset.L/2], 
+                         origin='lower', cmap='inferno')
+    axes[0].set_title(f"Reconstructed Amplitude (Freq={freq}Hz)")
+    plt.colorbar(im1, ax=axes[0])
+    
+    # 位相プロット
+    im2 = axes[1].imshow(phase, extent=[-dataset.L/2, dataset.L/2, -dataset.L/2, dataset.L/2], 
+                         origin='lower', cmap='twilight') # 位相にはtwilightがおすすめ
+    axes[1].set_title(f"Reconstructed Phase (Freq={freq}Hz)")
+    plt.colorbar(im2, ax=axes[1])
+    
+    plt.tight_layout()
+    
+    if save_dir:
+        plt.savefig(os.path.join(save_dir, f"helmholtz_field_{freq}Hz.png"))
+        
+    if show_plots:
+        plt.show()
+    plt.close()
